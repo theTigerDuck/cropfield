@@ -2,11 +2,11 @@
 
 namespace TheTigerDuck\Cropfield;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 
-class CropableImage extends DataExtension{
-	public function CroppedFromPos($width, $height, $posX, $posY, $rotate){
-		//$return = $this->owner->getFormattedImage('CroppedFromPos', $width, $height, $posX, $posY, $rotate);
+class CropableImage extends Extension{
+    public function CroppedFromPos($width, $height, $posX, $posY, $rotate){
+        //$return = $this->owner->getFormattedImage('CroppedFromPos', $width, $height, $posX, $posY, $rotate);
         //return $return;
         $variant = $this->owner->variantName(__FUNCTION__, $width, $height, $posX, $posY, $rotate);
         return $this->owner->manipulateImage($variant, function (\SilverStripe\Assets\Image_Backend $backend) use($width, $height, $posX, $posY, $rotate) {
@@ -16,9 +16,9 @@ class CropableImage extends DataExtension{
             $clone->setImageResource($resource);
             return $clone;
         });
-	}
+    }
 
-	public function generateCroppedFromPos($gd, $width, $height, $posX, $posY, $rotate){
-		return $gd->rotate($rotate * -1)->crop($posY, $posX,$width,$height);
-	}
+    public function generateCroppedFromPos($gd, $width, $height, $posX, $posY, $rotate){
+        return $gd->rotate($rotate * -1)->crop($posY, $posX,$width,$height);
+    }
 }

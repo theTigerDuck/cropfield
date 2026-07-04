@@ -24,6 +24,7 @@ use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\RelationList;
 use SilverStripe\ORM\UnsavedRelationList;
+use SilverStripe\Core\Validation\ValidationResult;
 
 /**
  * CropField creates a ImageUploadField,
@@ -196,28 +197,28 @@ class CropField extends FileField {
     }
 
     protected $imageID = 0;
-	/**
-	 * @var int The X-Value of the Upper left corner
-	 */
-	protected $posX = 0;
-	/**
-	 * @var int The Y-Value of the Upper left corner
-	 */
-	protected $posY = 0;
+    /**
+     * @var int The X-Value of the Upper left corner
+     */
+    protected $posX = 0;
+    /**
+     * @var int The Y-Value of the Upper left corner
+     */
+    protected $posY = 0;
 
-	protected $width = 150;
-	protected $height = 150;
-	protected $rotate = 0;
+    protected $width = 150;
+    protected $height = 150;
+    protected $rotate = 0;
 
-	protected $min_width = 150;
-	protected $min_height = 150;
-	protected $max_width = 500;
-	protected $max_height = 500;
-	protected $box_width = 500;
-	protected $box_height = 500;
-	protected $aspect = 0;
+    protected $min_width = 150;
+    protected $min_height = 150;
+    protected $max_width = 500;
+    protected $max_height = 500;
+    protected $box_width = 500;
+    protected $box_height = 500;
+    protected $aspect = 0;
 
-	public function __construct($name, $title = null, $value = null, $form = null) {
+    public function __construct($name, $title = null, $value = null, $form = null) {
         $instance = $this;
 
         $this->permissions['upload'] = true;
@@ -230,44 +231,44 @@ class CropField extends FileField {
         };
 
         parent::__construct($name, $title, $value, $form);
-		$this->relationAutoSetting = false;
+        $this->relationAutoSetting = false;
         $this->settings['uploadMultiple'] = false;
-		$this->setTemplate("CropField_holder")
-			->setThumbnailHeight(450)
-			->setThumbnailWidth(450)
+        $this->setTemplate("CropField_holder")
+            ->setThumbnailHeight(450)
+            ->setThumbnailWidth(450)
             ->setAcceptedFiles(array('.png','.gif','.jpeg','.jpg'));
         $this->setFieldHolderTemplate(__NAMESPACE__ . '\\CropField_holder');
     }
 
-	public function FieldHolder($attributes = array ()) {
-		Requirements::javascript(CROPFIELD_DIR.'/js/dropzone.js');
-		Requirements::javascript(CROPFIELD_DIR.'/js/file_attachment_field.js');
-		if($this->isCMS()) {
-			Requirements::javascript(CROPFIELD_DIR.'/js/file_attachment_field_backend.js');
-		}
-		Requirements::css(CROPFIELD_DIR.'/css/file_attachment_field.css');
+    public function FieldHolder($attributes = array ()) {
+        Requirements::javascript(CROPFIELD_DIR.'/js/dropzone.js');
+        Requirements::javascript(CROPFIELD_DIR.'/js/file_attachment_field.js');
+        if($this->isCMS()) {
+            Requirements::javascript(CROPFIELD_DIR.'/js/file_attachment_field_backend.js');
+        }
+        Requirements::css(CROPFIELD_DIR.'/css/file_attachment_field.css');
 
-		if(!$this->getSetting('url')) {
-			$this->settings['url'] = $this->Link('upload');
-		}
+        if(!$this->getSetting('url')) {
+            $this->settings['url'] = $this->Link('upload');
+        }
 
-		if(!$this->getSetting('maxFilesize')) {
-			$this->settings['maxFilesize'] = static::get_filesize_from_ini();
-		}
-		// The user may not have opted into a multiple upload. If the form field
-		// is attached to a record that has a multi relation, set that automatically.
-		$this->settings['uploadMultiple'] = false;
-		$this->setAcceptedFiles(array('.png','.gif','.jpeg','.jpg'));
-		if($token = $this->getForm()->getSecurityToken()) {
-			$this->addParam($token->getName(), $token->getSecurityID());
-		}
-		Requirements::javascript('vendor/thetigerduck/cropfield/js/jquery.min.js');
-		Requirements::javascript('vendor/thetigerduck/cropfield/js/cropper/cropper.min.js');
-		Requirements::javascript('vendor/thetigerduck/cropfield/js/cropfield.js');
-		Requirements::css('vendor/thetigerduck/cropfield/js/cropper/cropper.css');
-		Requirements::css('vendor/thetigerduck/cropfield/css/dropzone_alter.css');
-		return parent::FieldHolder($attributes);
-	}
+        if(!$this->getSetting('maxFilesize')) {
+            $this->settings['maxFilesize'] = static::get_filesize_from_ini();
+        }
+        // The user may not have opted into a multiple upload. If the form field
+        // is attached to a record that has a multi relation, set that automatically.
+        $this->settings['uploadMultiple'] = false;
+        $this->setAcceptedFiles(array('.png','.gif','.jpeg','.jpg'));
+        if($token = $this->getForm()->getSecurityToken()) {
+            $this->addParam($token->getName(), $token->getSecurityID());
+        }
+        Requirements::javascript('vendor/thetigerduck/cropfield/js/jquery.min.js');
+        Requirements::javascript('vendor/thetigerduck/cropfield/js/cropper/cropper.min.js');
+        Requirements::javascript('vendor/thetigerduck/cropfield/js/cropfield.js');
+        Requirements::css('vendor/thetigerduck/cropfield/js/cropper/cropper.css');
+        Requirements::css('vendor/thetigerduck/cropfield/css/dropzone_alter.css');
+        return parent::FieldHolder($attributes);
+    }
 
     /**
      * Define some requirements and settings just before rendering the Field Holder.
@@ -485,9 +486,9 @@ class CropField extends FileField {
      *
      * @return boolean
      */
-    public function validate($validator)
+    public function validate(): ValidationResult
     {
-        $result = true;
+        $result = parent::validate();
 
         // Detect if files have been removed between AJAX uploads and form submission
         $value = $this->dataValue();
@@ -497,36 +498,22 @@ class CropField extends FileField {
             // (Below validation isn't triggered as setValue() removes the invalid ID
             //  to prevent the CMS from loading something it shouldn't, also stops the
             //  validator from realizing there's an invalid ID.)
-            file_put_contents("cropfield.log", "Invalid file ID sent.".PHP_EOL, FILE_APPEND);
-            $validator->validationError(
-                $this->name,
-                _t(
-                    'FileAttachmentField.VALIDATION',
-                    'Invalid file ID sent.'
-                ),
-                "validation"
-            );
-            $result = false;
+            $result->addError(_t(
+                'FileAttachmentField.VALIDATION',
+                'Invalid file ID sent.'
+            ));
         } else if ($value && is_array($value)) {
-            file_put_contents("cropfield.log", "value is array".print_r($value,1).PHP_EOL, FILE_APPEND);
             // Prevent a malicious user from inspecting element and changing
             // one of the <input type="hidden"> fields to use an invalid File ID.
             $validIDs = $this->getValidFileIDs();
 
             foreach ($value as $id) {
                 if (!isset($validIDs[$id])) {
-                    if ($validator) {
-                        $validator->validationError(
-                            $this->name,
-                            _t(
-                                'CropField.VALIDATION',
-                                'Invalid file ID sent %s.',
-                                array('id' => $id)
-                            ),
-                            "validation"
-                        );
-                    }
-                    $result = false;
+                    $result->addError(_t(
+                        'CropField.VALIDATION',
+                        'Invalid file ID sent %s.',
+                        array('id' => $id)
+                    ));
                 }
             }
         }
@@ -1437,65 +1424,65 @@ class CropField extends FileField {
     }
 
     public function Type() {
-		return parent::Type() . ($this->readonly ? ' readonly' : '');
-	}
+        return parent::Type() . ($this->readonly ? ' readonly' : '');
+    }
 
-	public function setPosX($posX) {
-		$this->posX = $posX;
-		return $this;
-	}
-	public function setPosY($posY) {
-		$this->posY = $posY;
-		return $this;
-	}
-	public function setWidth($width) {
-		$this->width = $width;
-		return $this;
-	}
-	public function setHeight($height) {
-		$this->height = $height;
-		return $this;
-	}
-	public function setRotate($rotate) {
-		$this->rotate = $rotate;
-		return $this;
-	}
-	public function setMinWidth($width) {
-		$this->min_width = $width;
-		return $this;
-	}
-	public function setMinHeight($height) {
-		$this->min_height = $height;
-		return $this;
-	}
-	public function setMaxWidth($width) {
-		$this->max_width = $width;
-		return $this;
-	}
-	public function setMaxHeight($height) {
-		$this->max_height = $height;
-		return $this;
-	}
+    public function setPosX($posX) {
+        $this->posX = $posX;
+        return $this;
+    }
+    public function setPosY($posY) {
+        $this->posY = $posY;
+        return $this;
+    }
+    public function setWidth($width) {
+        $this->width = $width;
+        return $this;
+    }
+    public function setHeight($height) {
+        $this->height = $height;
+        return $this;
+    }
+    public function setRotate($rotate) {
+        $this->rotate = $rotate;
+        return $this;
+    }
+    public function setMinWidth($width) {
+        $this->min_width = $width;
+        return $this;
+    }
+    public function setMinHeight($height) {
+        $this->min_height = $height;
+        return $this;
+    }
+    public function setMaxWidth($width) {
+        $this->max_width = $width;
+        return $this;
+    }
+    public function setMaxHeight($height) {
+        $this->max_height = $height;
+        return $this;
+    }
 
-	public function setBoxWidth($width) {
-		$this->box_width = $width;
-		return $this;
-	}
-	public function setBoxHeight($height) {
-		$this->box_height = $height;
-		return $this;
-	}
-	public function setAspectRatio($aspect) {
-		$this->aspect = $aspect;
-		return $this;
-	}
+    public function setBoxWidth($width) {
+        $this->box_width = $width;
+        return $this;
+    }
+    public function setBoxHeight($height) {
+        $this->box_height = $height;
+        return $this;
+    }
+    public function setAspectRatio($aspect) {
+        $this->aspect = $aspect;
+        return $this;
+    }
 
-	public function Original(){
-		$img = Image::get()->byID($this->imageID);
-		return $img;
-	}
+    public function Original(){
+        $img = Image::get()->byID($this->imageID);
+        return $img;
+    }
 
-	public function Cropped($ID = null){
+    public function Cropped($ID = null){
         $img = Image::get()->byID($this->imageID);
         /*if($ID){
             $img = Image::get()->byID($ID);
@@ -1503,5 +1490,5 @@ class CropField extends FileField {
         file_put_contents("image.log", "ID: ".$ID.PHP_EOL, FILE_APPEND);
         file_put_contents("image.log", print_r($img,1).PHP_EOL, FILE_APPEND);*/
         return $img->getFormattedImage('CroppedImage', $this->width, $this->height, $this->posX, $this->posY, $this->rotate);
-	}
+    }
 }
