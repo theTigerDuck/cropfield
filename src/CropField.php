@@ -19,11 +19,11 @@ use SilverStripe\Assets\Image;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Core\Convert;
-use SilverStripe\ORM\ManyManyList;
-use SilverStripe\ORM\SS_List;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\RelationList;
-use SilverStripe\ORM\UnsavedRelationList;
+use SilverStripe\Model\List\ManyManyList;
+use SilverStripe\Model\List\SS_List;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\List\RelationList;
+use SilverStripe\Model\List\UnsavedRelationList;
 use SilverStripe\Core\Validation\ValidationResult;
 
 /**
